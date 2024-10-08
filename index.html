@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Dynamic Multi-Step Carousel with Blur</title>
+
+		<!-- Owl Carousel CSS -->
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css"
+		/>
+
+		<style>
+			/* Clase que aplica el efecto blur y oscurece el fondo */
+			.blur-background::before {
+				content: "";
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				backdrop-filter: blur(5px); /* Efecto de blur ajustado */
+				background-color: rgba(0, 0, 0, 0.4); /* Efecto de oscurecimiento */
+				z-index: 1;
+			}
+
+			/* General container styles */
+			.carousel-container {
+				width: 300px;
+				height: 600px;
+				border: 2px solid #ff9966;
+				border-radius: 15px;
+				background-color: rgba(
+					58,
+					58,
+					58,
+					0.8
+				); /* Fondo ligeramente oscuro pero translúcido */
+				position: fixed;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				padding: 5px;
+				z-index: 2; /* Aseguramos que el carrusel esté encima del efecto blur */
+				box-shadow: 0 0 20px rgba(255, 153, 102, 0.5),
+					0 0 40px rgba(255, 94, 98, 0.5);
+				animation: glowing 2s infinite alternate;
+			}
+
+			/* Fluorescent box shadow effect */
+			@keyframes glowing {
+				from {
+					box-shadow: 0 0 20px rgba(255, 153, 102, 0.4),
+						0 0 30px rgba(255, 94, 98, 0.4);
+				}
+				to {
+					box-shadow: 0 0 30px rgba(255, 153, 102, 0.6),
+						0 0 40px rgba(255, 94, 98, 0.6);
+				}
+			}
+
+			/* Header and close button */
+			.carousel-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 0;
+				color: white;
+				background-color: #333;
+				padding: 10px;
+				border-radius: 10px 10px 0 0;
+			}
+
+			.carousel-header h2 {
+				color: #ffffff;
+				font-family: "Arial", sans-serif;
+				font-size: 20px;
+				margin: 0;
+				font-weight: 400;
+			}
+
+			.close-btn {
+				background-color: #ff5e62;
+				color: white;
+				border: none;
+				border-radius: 5px;
+				width: 30px;
+				height: 30px;
+				cursor: pointer;
+				font-size: 18px;
+				text-align: center;
+			}
+
+			/* General ad item styles */
+			.ad-item {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 530px;
+				padding: 0;
+				border: none;
+				margin: 5px 0; /* Margen pequeño para el carrusel */
+			}
+
+			/* Ad content wrapper */
+			/* Ad content wrapper */
+			.ad-content {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				border-radius: 10px;
+				overflow: auto; /* Habilitar scroll si la imagen es más grande */
+				display: flex;
+				flex-direction: column;
+				gap: 20px;
+			}
+
+			/* Ad images */
+			.ad-content img {
+				width: 100%; /* Mantener la imagen dentro del ancho del contenedor */
+				height: auto; /* Mantener la proporción de la imagen */
+				object-fit: contain; /* Ajustar la imagen dentro del contenedor sin recortarla */
+			}
+
+			/* Info button style */
+			.info-btn {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				background-color: rgba(0, 0, 0, 0.7);
+				color: white;
+				border: none;
+				border-radius: 50%;
+				width: 25px;
+				height: 25px;
+				cursor: pointer;
+				font-size: 14px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+				transition: background-color 0.3s ease;
+			}
+
+			.info-btn:hover {
+				background-color: #ff9966;
+			}
+
+			/* Step-specific layouts */
+
+			/* Step 1: A single large ad */
+			.step-1 {
+				height: 530px;
+			}
+
+			/* Step 2: Two ads stacked in rows */
+			.step-2 {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.step-2 div {
+				height: calc(
+					50% - 10px
+				); /* Ajustamos el tamaño para tener dos filas con un gap de 20px */
+			}
+
+			/* Step 3: Three ads stacked in rows */
+			.step-3 {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.step-3 div {
+				height: calc(
+					33.33% - 13.33px
+				); /* Ajustamos el tamaño para tres filas con un gap de 20px */
+			}
+
+			/* Step 4: Four ads in a 2x2 grid */
+			.step-4 {
+				display: flex;
+				flex-wrap: wrap;
+			}
+
+			.step-4 div {
+				width: calc(
+					50% - 10px
+				); /* Ajustamos para tener dos columnas con un gap de 20px */
+				height: calc(
+					50% - 10px
+				); /* Ajustamos para tener dos filas con un gap de 20px */
+			}
+
+			/* Owl dots inside the main div */
+			.owl-dots {
+				text-align: center;
+				padding: 10px;
+				position: absolute;
+				bottom: 10px;
+				width: 100%;
+			}
+
+			.owl-dot {
+				width: 12px;
+				height: 12px;
+				background-color: #bbb;
+				border-radius: 50%;
+				display: inline-block;
+				margin: 0 5px;
+				cursor: pointer;
+			}
+
+			.owl-dot.active {
+				background-color: #ff9966;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- Contenido de prueba (Lorem Ipsum) -->
+		<div class="test-content">
+			<h1>Contenido de prueba</h1>
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
+				viverra nisi at bibendum euismod. Nullam et neque metus. Etiam fringilla
+				venenatis lorem, sed volutpat libero tincidunt sit amet. Suspendisse
+				potenti. Fusce sit amet tincidunt ligula. Ut condimentum quam ut gravida
+				lacinia.
+			</p>
+			<p>
+				Sed sollicitudin mollis metus, a egestas turpis vestibulum vitae. Nullam
+				sit amet lacus ut urna pretium condimentum ut at ex. Aenean volutpat
+				interdum nisi, ut dapibus dolor elementum vitae. Ut scelerisque, libero
+				nec lacinia egestas, tortor dui elementum nisl, in vehicula lorem dolor
+				eget neque.
+			</p>
+			<p>
+				Maecenas gravida enim ut ante facilisis, ut tincidunt lectus aliquam.
+				Praesent nec risus libero. Pellentesque a interdum felis. Sed aliquet
+				luctus nunc, sed viverra leo vehicula nec. Integer condimentum tristique
+				orci nec consectetur.
+			</p>
+		</div>
+
+		<!-- Div principal con título y botón de cierre -->
+		<div class="carousel-container">
+			<div class="carousel-header">
+				<h2>Anuncios</h2>
+				<button class="close-btn" onclick="closeCarousel()">x</button>
+			</div>
+
+			<!-- Carrusel de anuncios -->
+			<div class="owl-carousel owl-theme" id="multi-step-carousel"></div>
+		</div>
+
+		<!-- Owl Carousel JS -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+		<!-- Custom JS -->
+		<script>
+			$(document).ready(function () {
+				const timestamp = new Date().getTime();
+
+				const shuffleArray = (array) => {
+					for (let i = array.length - 1; i > 0; i--) {
+						const j = Math.floor(Math.random() * (i + 1));
+						[array[i], array[j]] = [array[j], array[i]]; // Intercambia los elementos
+					}
+					return array;
+				};
+
+				const getTag = (element) => {
+					switch (element.type) {
+						case "image":
+							return `<img src="${element.url}" alt="${element.text}"/>`;
+
+						case "video":
+							return `
+					<video width="300" height="300" controls>
+						<source src="${element.url}" type="video/${element.extension}">
+						${element.text}
+					</video>
+				`;
+
+						default:
+							break;
+					}
+				};
+
+							
+				const anuncios = {
+					"step1": [
+						{
+							"text": "Anuncio 1-1",
+							"info": "Más información sobre el anuncio 1",
+							"url": "/imagenes/ikea-1.jpg",
+							"type": "image"
+						},
+						{
+							"text": "Anuncio 1-2",
+							"info": "Más información sobre el anuncio 1",
+							"url": "/imagenes/ikea-2.jpg",
+							"type": "image"
+						}
+					],
+					"step2": [
+						{
+							"text": "Anuncio 2-1",
+							"info": "Más información sobre el anuncio 2-1",
+							"url": "/imagenes/7eleven.mp4",
+							"extension": "mp4",
+							"type": "video"
+						},
+						{
+							"text": "Anuncio 2-2",
+							"info": "Más información sobre el anuncio 2-2",
+							"url": "/imagenes/DQ.mp4",
+							"extension": "mp4",
+							"type": "video"
+						},
+						{
+							"text": "Anuncio 2-3",
+							"info": "Más información sobre el anuncio 2-3",
+							"url": "/imagenes/embotelladora aga.mp4",
+							"extension": "mp4",
+							"type": "video"
+						},
+						{
+							"text": "Anuncio 2-4",
+							"info": "Más información sobre el anuncio 2-4",
+							"url": "/imagenes/soriana.mp4",
+							"extension": "mp4",
+							"type": "video"
+						},
+						{
+							"text": "Anuncio 2-5",
+							"info": "Más información sobre el anuncio 2-5",
+							"url": "/imagenes/ikea.mp4",
+							"extension": "mp4",
+							"type": "video"
+						}
+					],
+					"step4": [
+						{
+							"text": "Anuncio 4-1",
+							"info": "Más información sobre el anuncio 4-1",
+							"url": "/imagenes/ikea.jpeg",
+							"type": "image"
+						},
+						{
+							"text": "Anuncio 4-2",
+							"info": "Más información sobre el anuncio 4-2",
+							"url": "/imagenes/supercashback.jpeg",
+							"type": "image"
+						},
+						{
+							"text": "Anuncio 4-3",
+							"info": "Más información sobre el anuncio 4-3",
+							"url": "/imagenes/soloofertas.jpeg",
+							"type": "image"
+						},
+						{
+							"text": "Anuncio 4-4",
+							"info": "Más información sobre el anuncio 4-4",
+							"url": "/imagenes/muffins.jpeg",
+							"type": "image"
+						}
+					]
+				}
+
+				// Cargar los anuncios desde JSON
+				var carousel = $("#multi-step-carousel");
+
+				let ads1 = shuffleArray(anuncios.step1);
+				ad = ads1.pop();
+				// Step 1: Un anuncio de 300x600 que cubre casi todo el div
+				carousel.append(`
+					<div class="ad-item step-1">
+						<div class="ad-content">
+							${getTag(ad)}
+							<button class="info-btn" onclick="showInfo('${ad.info}')">
+								i
+							</button>
+						</div>
+					</div>`);
+
+				let ads2 = shuffleArray(anuncios.step2);
+
+				// Step 2: Dos anuncios dividiendo el contenido
+				var step2 = '<div class="ad-item step-2">';
+				for (let i = 0; i < 2; i++) {
+					const ad = ads2.pop();
+					step2 += `
+				<div class="ad-content">
+					${getTag(ad)}
+					<button class="info-btn" onclick="showInfo('${ad.info}')">i</button>
+				</div>
+			`;
+				}
+				step2 += "</div>";
+				carousel.append(step2);
+
+				// Step 3: Tres anuncios dispuestos verticalmente
+				var step3 = '<div class="ad-item step-3">';
+				for (let i = 0; i < 3; i++) {
+					const ad = ads2.pop();
+					step3 += `
+						<div class="ad-content">
+							${getTag(ad)}
+							<button class="info-btn" onclick="showInfo('${ad.info}')">i</button>
+						</div>
+					`;
+				}
+				step3 += "</div>";
+				carousel.append(step3);
+
+				let ads4 = shuffleArray(anuncios.step4);
+
+				// Step 4: Cuatro anuncios formando una cruz
+				var step4 = '<div class="ad-item step-4">';
+				for (let i = 0; i < 4; i++) {
+					const ad = ads4.pop();
+					step4 += `
+						<div class="ad-content">
+							${getTag(ad)}
+							<button class="info-btn" onclick="showInfo('${ad.info}')">i</button>
+						</div>
+					`;
+				}
+				step4 += "</div>";
+				carousel.append(step4);
+
+				// Inicializar Owl Carousel con dots y autoplay (5 segundos)
+				carousel.owlCarousel({
+					items: 1,
+					loop: true,
+					nav: false, // Flechas desactivadas
+					dots: true, // Activar dots
+					autoplay: true, // Activar autoplay
+					autoplayTimeout: 5000, // Cambiar cada 5 segundos
+					autoplayHoverPause: true, // Pausar autoplay al pasar el mouse
+				});
+
+				// Aplicar blur cuando se abre el carrusel
+				$("body").addClass("blur-background");
+			});
+
+			// Función para mostrar la información del anuncio
+			function showInfo(info) {
+				alert(info); // Aquí podrías implementar un popup más elegante
+			}
+
+			// Función para cerrar el carrusel y quitar el blur
+			function closeCarousel() {
+				$(".carousel-container").hide();
+				$("body").removeClass("blur-background"); // Quitar el efecto blur cuando se cierre
+			}
+		</script>
+	</body>
+</html>
